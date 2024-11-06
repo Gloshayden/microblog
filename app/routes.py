@@ -1,5 +1,6 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import current_user, login_user, logout_user, login_required # type: ignore (this is because packages in venv dont count in vscode)
+from flask_babel import _, get_locale
 from urllib.parse import urlsplit
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm
@@ -17,7 +18,7 @@ def index():
         post = Post(body=form.post.data, author=current_user)
         db.session.add(post)
         db.session.commit()
-        flash('Your post is now live!')
+        flash(_('Your post is now live!'))
         return redirect(url_for('index'))
     # Shows following posts and sorts it in pages
     page = request.args.get('page', 1, type=int)
@@ -103,6 +104,7 @@ def edit_profile():
 # Runs before each request
 @app.before_request
 def before_request():
+    g.locale = str(get_locale())
     # Update 'last_seen' timestamp if user is authenticated
     if current_user.is_authenticated:
         current_user.last_seen = datetime.now(timezone.utc)
@@ -116,7 +118,7 @@ def follow(username):
         user = db.session.scalar(
             sa.select(User).where(User.username == username))
         if user is None:
-            flash(f'User {username} not found.')
+            flash(_(f'User {username} not found.', username=username))
             return redirect(url_for('index'))
         if user == current_user:
             flash('You cannot follow yourself!')
