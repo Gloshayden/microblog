@@ -124,6 +124,9 @@ class Post(db.Model):
     # Relationship linking post to its author (user)
     author: so.Mapped[User] = so.relationship(back_populates='posts')
 
+    # Adds the messages language into the database
+    language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(5))
+
     # Defines how post object is represented, helpful for debugging
     def __repr__(self):
         return '<Post {}>'.format(self.body)

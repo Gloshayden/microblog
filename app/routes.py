@@ -1,13 +1,15 @@
 from flask import render_template, flash, redirect, url_for, request, g
-from flask_login import current_user, login_user, logout_user, login_required # type: ignore (this is because packages in venv dont count in vscode)
+from flask_login import current_user, login_user, logout_user, login_required
 from flask_babel import _, get_locale
 from urllib.parse import urlsplit
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm
 from app.models import User, Post
 from app.email import send_password_reset_email
-import sqlalchemy as sa # type: ignore
+from app.translate import translate
+import sqlalchemy as sa
 from datetime import datetime, timezone
+from langdetect import detect, LangDetectException
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -15,7 +17,11 @@ from datetime import datetime, timezone
 def index():
     form = PostForm()
     if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
+        try:
+            language = detect(form.post.data)
+        except LangDetectException:
+            language = ''
+        post = Post(body=form.post.data, author=current_user, language=language)
         db.session.add(post)
         db.session.commit()
         flash(_('Your post is now live!'))
@@ -189,3 +195,9 @@ def reset_password(token):
         flash('Your password has been reset.')
         return redirect(url_for('login'))
     return render_template('reset_password.html', form=form)
+
+@app.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    data = request.get_json()
+    return {'text': translate(data['text'], data['source_language'], data['dest_language'])}
