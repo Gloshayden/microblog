@@ -1,15 +1,18 @@
 import os
 os.environ['DATABASE_URL'] = 'sqlite://'
-
+from config import Config
 from datetime import datetime, timezone, timedelta
 import unittest
 from app import app, db
 from app.models import User, Post
 
-
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
+        self.app = create_app(TestConfig)
         self.app_context = app.app_context()
         self.app_context.push()
         db.create_all()
@@ -68,14 +71,10 @@ class UserModelCase(unittest.TestCase):
 
         # create four posts
         now = datetime.now(timezone.utc)
-        p1 = Post(body="post from john", author=u1,
-                  timestamp=now + timedelta(seconds=1))
-        p2 = Post(body="post from susan", author=u2,
-                  timestamp=now + timedelta(seconds=4))
-        p3 = Post(body="post from mary", author=u3,
-                  timestamp=now + timedelta(seconds=3))
-        p4 = Post(body="post from david", author=u4,
-                  timestamp=now + timedelta(seconds=2))
+        p1 = Post(body="post from john", author=u1, timestamp=now + timedelta(seconds=1))
+        p2 = Post(body="post from susan", author=u2, timestamp=now + timedelta(seconds=4))
+        p3 = Post(body="post from mary", author=u3, timestamp=now + timedelta(seconds=3))
+        p4 = Post(body="post from david", author=u4, timestamp=now + timedelta(seconds=2))
         db.session.add_all([p1, p2, p3, p4])
         db.session.commit()
 
