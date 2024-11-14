@@ -40,7 +40,7 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.follower_id == id),
         back_populates='following')
 
-    # defining variables
+    # defining variables for use jinja variables in the templates
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
@@ -106,7 +106,7 @@ class User(UserMixin, db.Model):
 def load_user(id):
     return db.session.get(User, int(id))
 
-
+# creates the posts table in the database
 class Post(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     body: so.Mapped[str] = so.mapped_column(sa.String(140))
