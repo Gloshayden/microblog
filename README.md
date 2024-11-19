@@ -8,3 +8,5 @@ then activate it using source venv/bin/activate (run venv/scripts/activate if on
 after that run flask db init, flask db migrate, flask db upgrade
 
 after that you can run the app using flask run
+
+(the github on the header links to my github you can replace/remove it by deleting it in base.html)
